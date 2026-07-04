@@ -1,5 +1,6 @@
 package it.uniroma3.siw.torneocalcio.controller;
 
+import it.uniroma3.siw.torneocalcio.model.Commento;
 import it.uniroma3.siw.torneocalcio.model.Credentials;
 import it.uniroma3.siw.torneocalcio.service.TorneoService;
 import it.uniroma3.siw.torneocalcio.service.SquadraService;
@@ -7,11 +8,13 @@ import it.uniroma3.siw.torneocalcio.service.PartitaService;
 import it.uniroma3.siw.torneocalcio.service.CommentoService;
 import it.uniroma3.siw.torneocalcio.service.CredentialsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 public class MainController {
@@ -45,7 +48,7 @@ public class MainController {
     @GetMapping("/tornei/{id}/classifica")
     public String classificaTorneo(@PathVariable Long id, Model model) {
         model.addAttribute("torneo", torneoService.getTorneoConDettagli(id));
-        model.addAttribute("partite", partitaService.getPartiteByTorneo(id));
+        model.addAttribute("classifica", torneoService.calcolaClassifica(id));
         return "tornei/classifica";
     }
 
@@ -82,7 +85,10 @@ public class MainController {
 
     @GetMapping("/commenti/{id}/modifica")
     public String showModificaCommento(@PathVariable Long id, Model model) {
-        model.addAttribute("commento", commentoService.getCommento(id));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Commento commento = commentoService.getCommentoDiUtente(id, username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Non puoi modificare questo commento"));
+        model.addAttribute("commento", commento);
         return "partite/modifica-commento";
     }
 
@@ -91,7 +97,8 @@ public class MainController {
                                    @RequestParam String testo,
                                    @RequestParam Long partitaId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        commentoService.updateCommento(id, testo, username);
+        commentoService.updateCommento(id, testo, username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Non puoi modificare questo commento"));
         return "redirect:/partite/" + partitaId;
     }
 }

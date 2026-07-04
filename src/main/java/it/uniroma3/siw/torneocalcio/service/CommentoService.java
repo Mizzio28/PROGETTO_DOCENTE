@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CommentoService {
@@ -29,17 +30,28 @@ public class CommentoService {
         return commentoRepository.save(commento);
     }
 
+    /** Aggiorna il commento solo se appartiene all'utente indicato; altrimenti non fa nulla. */
     @Transactional
-    public Commento updateCommento(Long commentoId, String nuovoTesto, String username) {
-        Credentials creds = credentialsRepository.findByUsername(username).orElseThrow();
-        Commento commento = commentoRepository.findByIdAndAutoreId(commentoId, creds.getUser().getId())
-                .orElseThrow(() -> new IllegalStateException("Non puoi modificare questo commento"));
-        commento.setTesto(nuovoTesto);
-        return commentoRepository.save(commento);
+    public Optional<Commento> updateCommento(Long commentoId, String nuovoTesto, String username) {
+        return getCommentoDiUtente(commentoId, username).map(commento -> {
+            commento.setTesto(nuovoTesto);
+            return commentoRepository.save(commento);
+        });
     }
 
     @Transactional(readOnly = true)
     public Commento getCommento(Long id) {
         return commentoRepository.findById(id).orElse(null);
+    }
+
+    /** Restituisce il commento solo se appartiene all'utente indicato (controllo di proprietà). */
+    @Transactional(readOnly = true)
+    public Optional<Commento> getCommentoDiUtente(Long commentoId, String username) {
+        Credentials creds = credentialsRepository.findByUsername(username).orElseThrow();
+        if (creds.getUser() == null) {
+            // account senza profilo utente (es. admin): non può possedere commenti
+            return Optional.empty();
+        }
+        return commentoRepository.findByIdAndAutoreId(commentoId, creds.getUser().getId());
     }
 }

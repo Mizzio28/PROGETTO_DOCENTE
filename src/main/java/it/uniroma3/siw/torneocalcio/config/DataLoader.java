@@ -1,10 +1,9 @@
 package it.uniroma3.siw.torneocalcio.config;
 
 import it.uniroma3.siw.torneocalcio.model.*;
-import it.uniroma3.siw.torneocalcio.repository.*;
+import it.uniroma3.siw.torneocalcio.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,18 +16,22 @@ import java.util.List;
  * Popola il database con un dataset di esempio (tornei, squadre, giocatori, arbitri,
  * partite, utenti e commenti) solo se il database è vuoto, così resta riproducibile
  * su ogni ambiente pulito senza duplicare dati ad ogni riavvio.
+ *
+ * Passa esclusivamente dal service layer (mai dai repository direttamente), come
+ * farebbe un qualunque client applicativo, per restare coerente con l'architettura
+ * a livelli del progetto.
  */
 @Component
 public class DataLoader implements CommandLineRunner {
 
-    @Autowired private TorneoRepository torneoRepository;
-    @Autowired private SquadraRepository squadraRepository;
-    @Autowired private GiocatoreRepository giocatoreRepository;
-    @Autowired private ArbitroRepository arbitroRepository;
-    @Autowired private PartitaRepository partitaRepository;
-    @Autowired private CredentialsRepository credentialsRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private TorneoService torneoService;
+    @Autowired private SquadraService squadraService;
+    @Autowired private GiocatoreService giocatoreService;
+    @Autowired private ArbitroService arbitroService;
+    @Autowired private PartitaService partitaService;
+    @Autowired private CredentialsService credentialsService;
+    @Autowired private UserService userService;
+    @Autowired private CommentoService commentoService;
 
     private static final String[] NOMI = {
         "Marco", "Luca", "Andrea", "Matteo", "Davide", "Simone",
@@ -47,11 +50,11 @@ public class DataLoader implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (torneoRepository.count() > 0) {
+        if (torneoService.count() > 0) {
             return;
         }
 
-        creaAdmin();
+        credentialsService.saveAdminCredentials("admin", "admin123");
 
         Torneo coppaEstate = creaTorneo("Coppa Estate 2026", 2026,
             "Torneo estivo a eliminazione diretta tra le migliori squadre amatoriali della città.");
@@ -61,11 +64,11 @@ public class DataLoader implements CommandLineRunner {
         List<Squadra> squadre = creaSquadre();
         // Coppa Estate: prime 6 squadre
         for (int i = 0; i < 6; i++) {
-            associaSquadraATorneo(squadre.get(i), coppaEstate);
+            squadraService.aggiungiSquadraATorneo(squadre.get(i).getId(), coppaEstate.getId());
         }
         // Campionato Regionale: squadre 3-8 (con sovrapposizione sulle squadre 3,4,5,6)
         for (int i = 2; i < 8; i++) {
-            associaSquadraATorneo(squadre.get(i), campionatoRegionale);
+            squadraService.aggiungiSquadraATorneo(squadre.get(i).getId(), campionatoRegionale.getId());
         }
 
         for (Squadra squadra : squadre) {
@@ -78,16 +81,8 @@ public class DataLoader implements CommandLineRunner {
         partitePlayed.addAll(creaCalendarioPartite(coppaEstate, squadre.subList(0, 6), arbitri));
         partitePlayed.addAll(creaCalendarioPartite(campionatoRegionale, squadre.subList(2, 8), arbitri));
 
-        List<User> utenti = creaUtenti();
-        creaCommenti(partitePlayed, utenti);
-    }
-
-    private void creaAdmin() {
-        Credentials admin = new Credentials();
-        admin.setUsername("admin");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setRole(Credentials.ADMIN_ROLE);
-        credentialsRepository.save(admin);
+        List<String> usernames = creaUtenti();
+        creaCommenti(partitePlayed, usernames);
     }
 
     private Torneo creaTorneo(String nome, int anno, String descrizione) {
@@ -95,7 +90,7 @@ public class DataLoader implements CommandLineRunner {
         torneo.setNome(nome);
         torneo.setAnno(anno);
         torneo.setDescrizione(descrizione);
-        return torneoRepository.save(torneo);
+        return torneoService.saveTorneo(torneo);
     }
 
     private List<Squadra> creaSquadre() {
@@ -115,14 +110,9 @@ public class DataLoader implements CommandLineRunner {
             squadra.setNome(dati[0]);
             squadra.setCitta(dati[1]);
             squadra.setAnnoFondazione(Integer.parseInt(dati[2]));
-            squadre.add(squadraRepository.save(squadra));
+            squadre.add(squadraService.saveSquadra(squadra));
         }
         return squadre;
-    }
-
-    private void associaSquadraATorneo(Squadra squadra, Torneo torneo) {
-        squadra.getTornei().add(torneo);
-        squadraRepository.save(squadra);
     }
 
     private void creaRosaGiocatori(Squadra squadra) {
@@ -134,8 +124,7 @@ public class DataLoader implements CommandLineRunner {
             giocatore.setRuolo(RUOLI[i]);
             giocatore.setDataNascita(LocalDate.of(1992 + (i % 12), 1 + (i % 12), 1 + (i * 2) % 27));
             giocatore.setAltezza(1.68 + (i % 6) * 0.04);
-            giocatore.setSquadra(squadra);
-            giocatoreRepository.save(giocatore);
+            giocatoreService.saveGiocatore(giocatore, squadra.getId());
         }
     }
 
@@ -152,7 +141,7 @@ public class DataLoader implements CommandLineRunner {
         arbitro.setNome(nome);
         arbitro.setCognome(cognome);
         arbitro.setCodiceArbitrale(codice);
-        return arbitroRepository.save(arbitro);
+        return arbitroService.saveArbitro(arbitro);
     }
 
     private List<Partita> creaCalendarioPartite(Torneo torneo, List<Squadra> squadreTorneo, List<Arbitro> arbitri) {
@@ -166,58 +155,51 @@ public class DataLoader implements CommandLineRunner {
             Squadra away = squadreTorneo.get((i + 1) % numSquadre);
             if (home.equals(away)) continue;
 
-            Partita partita = new Partita();
-            partita.setTorneo(torneo);
-            partita.setSquadraHome(home);
-            partita.setSquadraAway(away);
-            partita.setArbitro(arbitri.get(i % arbitri.size()));
-            partita.setLuogo("Stadio Comunale " + home.getCitta());
-
             boolean giocata = i % 2 == 0;
-            if (giocata) {
-                partita.setDataOra(oggi.minusDays(21 - (i * 3)));
-                partita.setStato(StatoPartita.PLAYED);
-                partita.setGoalsHome((i * 2) % 4);
-                partita.setGoalsAway((i * 3) % 4);
-            } else {
-                partita.setDataOra(oggi.plusDays(7 + (i * 3)));
-                partita.setStato(StatoPartita.SCHEDULED);
-            }
 
-            Partita salvata = partitaRepository.save(partita);
+            Partita partita = new Partita();
+            partita.setLuogo("Stadio Comunale " + home.getCitta());
+            partita.setDataOra(giocata ? oggi.minusDays(21 - (i * 3)) : oggi.plusDays(7 + (i * 3)));
+
+            Arbitro arbitro = arbitri.get(i % arbitri.size());
+            Partita salvata = partitaService.registraPartita(
+                partita, torneo.getId(), home.getId(), away.getId(), arbitro.getId());
+
             if (giocata) {
+                int golHome = (i * 2) % 4;
+                int golAway = (i * 3) % 4;
+                salvata = partitaService.inserisciRisultato(salvata.getId(), golHome, golAway);
                 giocate.add(salvata);
             }
         }
         return giocate;
     }
 
-    private List<User> creaUtenti() {
-        List<User> utenti = new ArrayList<>();
-        utenti.add(creaUtente("Marco", "Lupi", "marco.lupi@example.com", "marco.lupi"));
-        utenti.add(creaUtente("Giulia", "Neri", "giulia.neri@example.com", "giulia.neri"));
-        utenti.add(creaUtente("Davide", "Ferri", "davide.ferri@example.com", "davide.ferri"));
-        return utenti;
+    private List<String> creaUtenti() {
+        List<String> usernames = new ArrayList<>();
+        usernames.add(creaUtente("Marco", "Lupi", "marco.lupi@example.com", "marco.lupi"));
+        usernames.add(creaUtente("Giulia", "Neri", "giulia.neri@example.com", "giulia.neri"));
+        usernames.add(creaUtente("Davide", "Ferri", "davide.ferri@example.com", "davide.ferri"));
+        return usernames;
     }
 
-    private User creaUtente(String nome, String cognome, String email, String username) {
+    private String creaUtente(String nome, String cognome, String email, String username) {
         User user = new User();
         user.setName(nome);
         user.setSurname(cognome);
         user.setEmail(email);
-        user = userRepository.save(user);
+        user = userService.saveUser(user);
 
         Credentials credentials = new Credentials();
         credentials.setUsername(username);
-        credentials.setPassword(passwordEncoder.encode("password123"));
-        credentials.setRole(Credentials.DEFAULT_ROLE);
+        credentials.setPassword("password123");
         credentials.setUser(user);
-        credentialsRepository.save(credentials);
+        credentialsService.saveCredentials(credentials);
 
-        return user;
+        return username;
     }
 
-    private void creaCommenti(List<Partita> partitePlayed, List<User> utenti) {
+    private void creaCommenti(List<Partita> partitePlayed, List<String> usernames) {
         String[] testi = {
             "Bella partita, ottimo secondo tempo!",
             "L'arbitro ha diretto bene, complimenti.",
@@ -226,13 +208,8 @@ public class DataLoader implements CommandLineRunner {
         };
         for (int i = 0; i < partitePlayed.size(); i++) {
             Partita partita = partitePlayed.get(i);
-            User autore = utenti.get(i % utenti.size());
-            Commento commento = new Commento();
-            commento.setTesto(testi[i % testi.length]);
-            commento.setPartita(partita);
-            commento.setAutore(autore);
-            partita.getCommenti().add(commento);
+            String username = usernames.get(i % usernames.size());
+            commentoService.addCommento(testi[i % testi.length], partita.getId(), username);
         }
-        partitaRepository.saveAll(partitePlayed);
     }
 }

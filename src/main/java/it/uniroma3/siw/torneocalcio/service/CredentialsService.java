@@ -33,6 +33,16 @@ public class CredentialsService {
         return credentialsRepository.save(credentials);
     }
 
+    /** Crea un account con ruolo ADMIN (nessun profilo utente collegato). */
+    @Transactional
+    public Credentials saveAdminCredentials(String username, String rawPassword) {
+        Credentials credentials = new Credentials();
+        credentials.setUsername(username);
+        credentials.setPassword(this.passwordEncoder.encode(rawPassword));
+        credentials.setRole(Credentials.ADMIN_ROLE);
+        return credentialsRepository.save(credentials);
+    }
+
     @Transactional(readOnly = true)
     public boolean usernameExists(String username) {
         return credentialsRepository.findByUsername(username).isPresent();
