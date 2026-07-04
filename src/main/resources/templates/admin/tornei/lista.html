@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Admin Tornei</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<nav class="navbar">
+  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
+  <a th:href="@{/admin}">Dashboard</a>
+  <a th:href="@{/admin/tornei}">Tornei</a>
+  <div class="nav-right"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-secondary">Logout</button></form></div>
+</nav>
+<div class="container">
+  <h1>Gestione Tornei</h1>
+  <a th:href="@{/admin/tornei/nuovo}" class="btn btn-primary" style="margin-bottom:16px">+ Nuovo torneo</a>
+  <table>
+    <thead><tr><th>Nome</th><th>Anno</th><th>Descrizione</th><th>Azioni</th></tr></thead>
+    <tbody>
+      <tr th:each="t : ${tornei}">
+        <td th:text="${t.nome}"></td>
+        <td th:text="${t.anno}"></td>
+        <td th:text="${t.descrizione}"></td>
+        <td>
+          <a th:href="@{/admin/tornei/{id}/modifica(id=${t.id})}" class="btn btn-primary">Modifica</a>
+          <a th:href="@{/tornei/{id}(id=${t.id})}" class="btn btn-secondary">Visualizza</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body></html>

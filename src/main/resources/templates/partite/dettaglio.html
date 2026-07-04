@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head><meta charset="UTF-8"><title>Partita</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<nav class="navbar">
+  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
+  <a th:href="@{/tornei}">Tornei</a>
+  <div class="nav-right">
+    <span sec:authorize="isAuthenticated()">
+      <span sec:authentication="name"></span> |
+      <form th:action="@{/logout}" method="post" style="display:inline">
+        <button type="submit" class="btn btn-secondary">Logout</button>
+      </form>
+    </span>
+    <span sec:authorize="isAnonymous()"><a th:href="@{/login}" class="btn btn-primary">Login</a></span>
+  </div>
+</nav>
+<div class="container">
+  <h1>Partita: <span th:text="${partita.squadraHome.nome}"></span> vs <span th:text="${partita.squadraAway.nome}"></span></h1>
+  <div class="card">
+    <p><strong>Data:</strong> <span th:text="${#temporals.format(partita.dataOra,'dd/MM/yyyy HH:mm')}"></span></p>
+    <p><strong>Luogo:</strong> <span th:text="${partita.luogo}"></span></p>
+    <p><strong>Stato:</strong> <span th:text="${partita.stato}"></span></p>
+    <p th:if="${partita.stato.name() == 'PLAYED'}">
+      <strong>Risultato:</strong> <span th:text="${partita.goalsHome}"></span> - <span th:text="${partita.goalsAway}"></span>
+    </p>
+    <p><strong>Arbitro:</strong> <span th:text="${partita.arbitro.cognome + ' ' + partita.arbitro.nome}"></span></p>
+  </div>
+
+  <h2 style="margin-top:24px">Commenti</h2>
+  <!-- Visualizzazione commenti: tutti gli utenti registrati -->
+  <div sec:authorize="isAnonymous()">
+    <p><a th:href="@{/login}">Accedi</a> per vedere e aggiungere commenti.</p>
+  </div>
+  <div sec:authorize="isAuthenticated()">
+    <div class="card" th:each="c : ${partita.commenti}">
+      <p><strong th:text="${c.autore.name + ' ' + c.autore.surname}"></strong>
+         <small th:text="${#temporals.format(c.dataCommento,'dd/MM/yyyy HH:mm')}"></small></p>
+      <p th:text="${c.testo}"></p>
+      <a sec:authorize="isAuthenticated()"
+         th:if="${#authentication.name == c.autore.email}"
+         th:href="@{/commenti/{id}/modifica(id=${c.id})}" class="btn btn-secondary">Modifica</a>
+    </div>
+    <div th:if="${#lists.isEmpty(partita.commenti)}"><p>Nessun commento.</p></div>
+    <!-- Form aggiunta commento -->
+    <div class="card" style="margin-top:16px">
+      <h3>Aggiungi un commento</h3>
+      <form th:action="@{/partite/{id}/commenti(id=${partita.id})}" method="post">
+        <div class="form-group">
+          <textarea name="testo" rows="3" placeholder="Scrivi il tuo commento..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Invia</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body></html>

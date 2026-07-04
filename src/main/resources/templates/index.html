@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head><meta charset="UTF-8"><title>Tornei di Calcio</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<nav class="navbar">
+  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
+  <a th:href="@{/tornei}">Tornei</a>
+  <div class="nav-right">
+    <span sec:authorize="isAuthenticated()">
+      <span sec:authentication="name"></span> |
+      <form th:action="@{/logout}" method="post" style="display:inline">
+        <button type="submit" class="btn btn-secondary">Logout</button>
+      </form>
+    </span>
+    <span sec:authorize="isAnonymous()">
+      <a th:href="@{/login}" class="btn btn-primary">Login</a>
+      <a th:href="@{/register}" class="btn btn-secondary">Registrati</a>
+    </span>
+    <span sec:authorize="hasAuthority('ADMIN')">
+      <a th:href="@{/admin}" class="btn btn-danger">Admin</a>
+    </span>
+  </div>
+</nav>
+<div class="container">
+  <h1>Benvenuto su TorneoCalcio</h1>
+  <p>Gestione tornei di calcio amatoriale. Esplora i tornei attivi.</p>
+  <h2 style="margin-top:24px">Tornei recenti</h2>
+  <div class="grid">
+    <div class="card" th:each="torneo : ${tornei}">
+      <h3 th:text="${torneo.nome}"></h3>
+      <p th:text="${torneo.anno}"></p>
+      <a th:href="@{/tornei/{id}(id=${torneo.id})}" class="btn btn-primary">Vai al torneo</a>
+    </div>
+    <div th:if="${#lists.isEmpty(tornei)}"><p>Nessun torneo disponibile.</p></div>
+  </div>
+</div>
+</body></html>

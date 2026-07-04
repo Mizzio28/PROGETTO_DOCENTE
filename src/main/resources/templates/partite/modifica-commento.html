@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Modifica Commento</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a></nav>
+<div class="container" style="max-width:600px">
+  <div class="card" style="margin-top:32px">
+    <h2>Modifica commento</h2>
+    <form th:action="@{/commenti/{id}/modifica(id=${commento.id})}" method="post">
+      <input type="hidden" name="partitaId" th:value="${commento.partita.id}"/>
+      <div class="form-group">
+        <label>Testo</label>
+        <textarea name="testo" rows="4" required th:text="${commento.testo}"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Salva</button>
+      <a th:href="@{/partite/{id}(id=${commento.partita.id})}" class="btn btn-secondary">Annulla</a>
+    </form>
+  </div>
+</div>
+</body></html>

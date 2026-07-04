@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head><meta charset="UTF-8"><title th:text="${torneo.nome}"></title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<nav class="navbar">
+  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
+  <a th:href="@{/tornei}">Tornei</a>
+  <div class="nav-right">
+    <span sec:authorize="isAuthenticated()">
+      <span sec:authentication="name"></span> |
+      <form th:action="@{/logout}" method="post" style="display:inline">
+        <button type="submit" class="btn btn-secondary">Logout</button>
+      </form>
+    </span>
+    <span sec:authorize="isAnonymous()"><a th:href="@{/login}" class="btn btn-primary">Login</a></span>
+  </div>
+</nav>
+<div class="container">
+  <h1 th:text="${torneo.nome}"></h1>
+  <p><strong>Anno:</strong> <span th:text="${torneo.anno}"></span></p>
+  <p th:text="${torneo.descrizione}"></p>
+
+  <div style="margin:16px 0">
+    <a th:href="@{/tornei/{id}/classifica(id=${torneo.id})}" class="btn btn-primary">Classifica</a>
+  </div>
+
+  <h2>Squadre partecipanti</h2>
+  <div class="grid">
+    <div class="card" th:each="s : ${torneo.squadre}">
+      <h3 th:text="${s.nome}"></h3>
+      <p><span th:text="${s.citta}"></span> - fondata <span th:text="${s.annoFondazione}"></span></p>
+      <a th:href="@{/squadre/{id}(id=${s.id})}" class="btn btn-primary">Vedi rosa</a>
+    </div>
+    <p th:if="${#lists.isEmpty(torneo.squadre)}">Nessuna squadra registrata.</p>
+  </div>
+
+  <h2 style="margin-top:24px">Calendario partite</h2>
+  <table>
+    <thead><tr><th>Data/Ora</th><th>Luogo</th><th>Home</th><th>Away</th><th>Risultato</th><th>Stato</th><th></th></tr></thead>
+    <tbody>
+      <tr th:each="p : ${partite}">
+        <td th:text="${#temporals.format(p.dataOra,'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${p.luogo}"></td>
+        <td th:text="${p.squadraHome.nome}"></td>
+        <td th:text="${p.squadraAway.nome}"></td>
+        <td th:text="${p.stato.name() == 'PLAYED' ? p.goalsHome + ' - ' + p.goalsAway : '-'}"></td>
+        <td><span class="badge" th:classappend="${p.stato.name() == 'PLAYED' ? 'badge-green' : 'badge-blue'}" th:text="${p.stato}"></span></td>
+        <td><a th:href="@{/partite/{id}(id=${p.id})}" class="btn btn-secondary">Dettaglio</a></td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(partite)}"><td colspan="7">Nessuna partita.</td></tr>
+    </tbody>
+  </table>
+</div>
+</body></html>

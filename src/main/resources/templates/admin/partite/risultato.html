@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Inserisci Risultato</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a><a th:href="@{/admin}">Dashboard</a></nav>
+<div class="container" style="max-width:480px">
+  <div class="card" style="margin-top:32px">
+    <h2>Inserisci Risultato</h2>
+    <p><strong th:text="${partita.squadraHome.nome}"></strong> vs <strong th:text="${partita.squadraAway.nome}"></strong></p>
+    <p th:text="${#temporals.format(partita.dataOra,'dd/MM/yyyy HH:mm')} + ' - ' + partita.luogo"></p>
+    <form th:action="@{/admin/partite/{id}/risultato(id=${partita.id})}" method="post">
+      <div class="form-group"><label th:text="'Goal ' + partita.squadraHome.nome">
+        </label><input type="number" name="goalsHome" min="0" value="0" required/></div>
+      <div class="form-group"><label th:text="'Goal ' + partita.squadraAway.nome">
+        </label><input type="number" name="goalsAway" min="0" value="0" required/></div>
+      <button type="submit" class="btn btn-primary">Salva risultato</button>
+      <a th:href="@{/admin}" class="btn btn-secondary">Annulla</a>
+    </form>
+  </div>
+</div>
+</body></html>
