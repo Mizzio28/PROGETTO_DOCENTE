@@ -1,10 +1,13 @@
 package it.uniroma3.siw.torneocalcio.controller;
 
+import it.uniroma3.siw.torneocalcio.model.Credentials;
 import it.uniroma3.siw.torneocalcio.service.TorneoService;
 import it.uniroma3.siw.torneocalcio.service.SquadraService;
 import it.uniroma3.siw.torneocalcio.service.PartitaService;
 import it.uniroma3.siw.torneocalcio.service.CommentoService;
+import it.uniroma3.siw.torneocalcio.service.CredentialsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +20,7 @@ public class MainController {
     @Autowired private SquadraService squadraService;
     @Autowired private PartitaService partitaService;
     @Autowired private CommentoService commentoService;
+    @Autowired private CredentialsService credentialsService;
 
     @GetMapping("/")
     public String index(Model model) {
@@ -56,6 +60,14 @@ public class MainController {
     @GetMapping("/partite/{id}")
     public String dettaglioPartita(@PathVariable Long id, Model model) {
         model.addAttribute("partita", partitaService.getPartitaConCommenti(id));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String && "anonymousUser".equals(authentication.getPrincipal()))) {
+            Credentials credentials = credentialsService.getCredentials(authentication.getName());
+            if (credentials != null && credentials.getUser() != null) {
+                model.addAttribute("currentUserEmail", credentials.getUser().getEmail());
+            }
+        }
         return "partite/dettaglio";
     }
 

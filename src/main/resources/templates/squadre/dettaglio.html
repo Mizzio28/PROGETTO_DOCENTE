@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title th:text="${squadra.nome}"></title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title=${squadra.nome})}"></head>
 <body>
-<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a><a th:href="@{/tornei}">Tornei</a></nav>
-<div class="container">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container py-4">
   <h1 th:text="${squadra.nome}"></h1>
   <p><strong>Città:</strong> <span th:text="${squadra.citta}"></span></p>
   <p><strong>Anno fondazione:</strong> <span th:text="${squadra.annoFondazione}"></span></p>
-  <h2 style="margin-top:24px">Rosa giocatori</h2>
-  <table>
-    <thead><tr><th>Cognome</th><th>Nome</th><th>Data nascita</th><th>Ruolo</th><th>Altezza</th></tr></thead>
-    <tbody>
-      <tr th:each="g : ${squadra.giocatori}">
-        <td th:text="${g.cognome}"></td>
-        <td th:text="${g.nome}"></td>
-        <td th:text="${#temporals.format(g.dataNascita,'dd/MM/yyyy')}"></td>
-        <td th:text="${g.ruolo}"></td>
-        <td th:text="${g.altezza != null ? g.altezza + ' m' : '-'}"></td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(squadra.giocatori)}"><td colspan="5">Nessun giocatore.</td></tr>
-    </tbody>
-  </table>
-  <a th:href="@{/tornei}" class="btn btn-secondary" style="margin-top:16px">Torna ai tornei</a>
+  <h2 class="mt-4 mb-3">Rosa giocatori</h2>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle bg-white shadow-sm">
+      <thead><tr><th>Cognome</th><th>Nome</th><th>Data nascita</th><th>Ruolo</th><th>Altezza</th></tr></thead>
+      <tbody>
+        <tr th:each="g : ${squadra.giocatori}">
+          <td th:text="${g.cognome}"></td>
+          <td th:text="${g.nome}"></td>
+          <td th:text="${#temporals.format(g.dataNascita,'dd/MM/yyyy')}"></td>
+          <td th:text="${g.ruolo}"></td>
+          <td th:text="${g.altezza != null ? g.altezza + ' m' : '-'}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(squadra.giocatori)}"><td colspan="5">Nessun giocatore.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <a th:href="@{/tornei}" class="btn btn-secondary mt-3">Torna ai tornei</a>
 </div>
 </body></html>

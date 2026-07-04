@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Classifica</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Classifica')}"></head>
 <body>
-<nav class="navbar">
-  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
-  <a th:href="@{/tornei}">Tornei</a>
-</nav>
-<div class="container">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container py-4">
   <h1>Classifica: <span th:text="${torneo.nome}"></span></h1>
-  <p><em>La classifica viene calcolata dinamicamente: 3 pt vittoria, 1 pt pareggio.</em></p>
-  <!-- Il calcolo classifica avviene lato server nel service; qui mostriamo solo le partite giocate -->
-  <table>
-    <thead><tr><th>Squadra Home</th><th>Goal Home</th><th>Goal Away</th><th>Squadra Away</th><th>Data</th></tr></thead>
-    <tbody>
-      <tr th:each="p : ${partite}" th:if="${p.stato.name() == 'PLAYED'}">
-        <td th:text="${p.squadraHome.nome}"></td>
-        <td th:text="${p.goalsHome}"></td>
-        <td th:text="${p.goalsAway}"></td>
-        <td th:text="${p.squadraAway.nome}"></td>
-        <td th:text="${#temporals.format(p.dataOra,'dd/MM/yyyy')}"></td>
-      </tr>
-    </tbody>
-  </table>
-  <a th:href="@{/tornei/{id}(id=${torneo.id})}" class="btn btn-secondary" style="margin-top:16px">Torna al torneo</a>
+  <p class="text-muted fst-italic">La classifica viene calcolata dinamicamente: 3 pt vittoria, 1 pt pareggio.</p>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle bg-white shadow-sm classifica-table">
+      <thead><tr><th>Squadra Home</th><th>Goal Home</th><th>Goal Away</th><th>Squadra Away</th><th>Data</th></tr></thead>
+      <tbody>
+        <tr th:each="p : ${partite}" th:if="${p.stato.name() == 'PLAYED'}">
+          <td th:text="${p.squadraHome.nome}"></td>
+          <td th:text="${p.goalsHome}"></td>
+          <td th:text="${p.goalsAway}"></td>
+          <td th:text="${p.squadraAway.nome}"></td>
+          <td th:text="${#temporals.format(p.dataOra,'dd/MM/yyyy')}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <a th:href="@{/tornei/{id}(id=${torneo.id})}" class="btn btn-secondary mt-3">Torna al torneo</a>
 </div>
 </body></html>

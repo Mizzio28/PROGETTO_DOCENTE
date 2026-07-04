@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Aggiungi a Torneo</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Aggiungi a Torneo')}"></head>
 <body>
-<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a><a th:href="@{/admin}">Dashboard</a></nav>
-<div class="container" style="max-width:480px">
-  <div class="card" style="margin-top:32px">
-    <h2>Aggiungi <span th:text="${squadra.nome}"></span> a un torneo</h2>
-    <form th:action="@{/admin/squadre/{id}/aggiungi-a-torneo(id=${squadra.id})}" method="post">
-      <div class="form-group"><label>Seleziona Torneo</label>
-        <select name="torneoId" required>
-          <option th:each="t : ${tornei}" th:value="${t.id}" th:text="${t.nome + ' (' + t.anno + ')'}"></option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">Aggiungi</button>
-      <a th:href="@{/admin/squadre}" class="btn btn-secondary">Annulla</a>
-    </form>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4" style="max-width:480px">
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h2 class="h4">Aggiungi <span th:text="${squadra.nome}"></span> a un torneo</h2>
+      <form th:action="@{/admin/squadre/{id}/aggiungi-a-torneo(id=${squadra.id})}" method="post">
+        <div class="mb-3"><label class="form-label">Seleziona Torneo</label>
+          <select name="torneoId" class="form-select" required>
+            <option th:each="t : ${tornei}" th:value="${t.id}" th:text="${t.nome + ' (' + t.anno + ')'}"></option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Aggiungi</button>
+        <a th:href="@{/admin/squadre}" class="btn btn-secondary">Annulla</a>
+      </form>
+    </div>
   </div>
 </div>
 </body></html>

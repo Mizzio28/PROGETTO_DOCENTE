@@ -27,4 +27,23 @@ public class ArbitroService {
     public Arbitro saveArbitro(Arbitro arbitro) {
         return arbitroRepository.save(arbitro);
     }
+
+    @Transactional
+    public Arbitro updateArbitro(Long id, Arbitro aggiornato) {
+        Arbitro existing = arbitroRepository.findById(id).orElseThrow();
+        existing.setNome(aggiornato.getNome());
+        existing.setCognome(aggiornato.getCognome());
+        existing.setCodiceArbitrale(aggiornato.getCodiceArbitrale());
+        return arbitroRepository.save(existing);
+    }
+
+    @Transactional
+    public void deleteArbitro(Long id) {
+        Arbitro arbitro = arbitroRepository.findById(id).orElseThrow();
+        if (!arbitro.getPartite().isEmpty()) {
+            throw new IllegalStateException(
+                "Impossibile eliminare: arbitro assegnato a " + arbitro.getPartite().size() + " partite");
+        }
+        arbitroRepository.delete(arbitro);
+    }
 }

@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Form Squadra</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Form Squadra')}"></head>
 <body>
-<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a><a th:href="@{/admin}">Dashboard</a></nav>
-<div class="container" style="max-width:560px">
-  <div class="card" style="margin-top:32px">
-    <h2 th:text="${squadra.id == null ? 'Nuova Squadra' : 'Modifica Squadra'}"></h2>
-    <form th:action="${squadra.id == null ? '/admin/squadre/nuova' : '/admin/squadre/' + squadra.id + '/modifica'}"
-          th:object="${squadra}" method="post">
-      <div class="form-group"><label>Nome</label><input type="text" th:field="*{nome}" required/></div>
-      <div class="form-group"><label>Città</label><input type="text" th:field="*{citta}" required/></div>
-      <div class="form-group"><label>Anno Fondazione</label><input type="number" th:field="*{annoFondazione}" required/></div>
-      <button type="submit" class="btn btn-primary">Salva</button>
-      <a th:href="@{/admin/squadre}" class="btn btn-secondary">Annulla</a>
-    </form>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4" style="max-width:560px">
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h2 class="h4" th:text="${squadra.id == null ? 'Nuova Squadra' : 'Modifica Squadra'}"></h2>
+      <form th:action="${squadra.id == null ? '/admin/squadre/nuova' : '/admin/squadre/' + squadra.id + '/modifica'}"
+            th:object="${squadra}" method="post">
+        <div class="mb-3"><label class="form-label">Nome</label>
+          <input type="text" class="form-control" th:field="*{nome}" required/></div>
+        <div class="mb-3"><label class="form-label">Città</label>
+          <input type="text" class="form-control" th:field="*{citta}" required/></div>
+        <div class="mb-3"><label class="form-label">Anno Fondazione</label>
+          <input type="number" class="form-control" th:field="*{annoFondazione}" required/></div>
+        <button type="submit" class="btn btn-primary">Salva</button>
+        <a th:href="@{/admin/squadre}" class="btn btn-secondary">Annulla</a>
+      </form>
+    </div>
   </div>
 </div>
 </body></html>

@@ -11,8 +11,11 @@ public interface TorneoRepository extends CrudRepository<Torneo, Long> {
     List<Torneo> findAllByOrderByAnnoDesc();
 
     // Per analisi fetch: eager loading con EntityGraph
-    @EntityGraph(attributePaths = {"squadre", "partite"})
-    Optional<Torneo> findWithSquadreAndPartiteById(Long id);
+    // Nota: "squadre" e "partite" sono entrambe List (bag): Hibernate non può fare
+    // fetch join di due bag contemporaneamente (MultipleBagFetchException), quindi
+    // si carica eager solo "squadre" e si lascia "partite" lazy (via Open Session in View).
+    @EntityGraph(attributePaths = {"squadre"})
+    Optional<Torneo> findWithSquadreById(Long id);
 
     // Per analisi fetch: join fetch JPQL
     @Query("SELECT DISTINCT t FROM Torneo t LEFT JOIN FETCH t.squadre s LEFT JOIN FETCH s.giocatori WHERE t.id = :id")

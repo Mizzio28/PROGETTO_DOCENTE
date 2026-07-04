@@ -7,7 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,6 +26,8 @@ public class AdminController {
     public String dashboard(Model model) {
         model.addAttribute("tornei", torneoService.getAllTornei());
         model.addAttribute("squadre", squadraService.getAllSquadre());
+        model.addAttribute("arbitri", arbitroService.getAllArbitri());
+        model.addAttribute("partite", partitaService.getAllPartite());
         return "admin/index";
     }
 
@@ -60,6 +64,16 @@ public class AdminController {
                                  BindingResult result) {
         if (result.hasErrors()) return "admin/tornei/form";
         torneoService.updateTorneo(id, torneo);
+        return "redirect:/admin/tornei";
+    }
+
+    @PostMapping("/tornei/{id}/elimina")
+    public String eliminaTorneo(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            torneoService.deleteTorneo(id);
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/tornei";
     }
 
@@ -157,6 +171,17 @@ public class AdminController {
     }
 
     // ===== PARTITE =====
+    @GetMapping("/partite")
+    public String listaPartite(@RequestParam(required = false) Long torneoId, Model model) {
+        List<Partita> partite = (torneoId != null)
+            ? partitaService.getPartiteByTorneoDesc(torneoId)
+            : partitaService.getAllPartite();
+        model.addAttribute("partite", partite);
+        model.addAttribute("tornei", torneoService.getAllTornei());
+        model.addAttribute("torneoId", torneoId);
+        return "admin/partite/lista";
+    }
+
     @GetMapping("/partite/nuova")
     public String nuovaPartitaForm(Model model) {
         model.addAttribute("partita", new Partita());
@@ -173,7 +198,7 @@ public class AdminController {
                                @RequestParam Long squadraAwayId,
                                @RequestParam Long arbitroId) {
         partitaService.registraPartita(partita, torneoId, squadraHomeId, squadraAwayId, arbitroId);
-        return "redirect:/admin";
+        return "redirect:/admin/partite";
     }
 
     @GetMapping("/partite/{id}/risultato")
@@ -187,16 +212,22 @@ public class AdminController {
                                      @RequestParam Integer goalsHome,
                                      @RequestParam Integer goalsAway) {
         partitaService.inserisciRisultato(id, goalsHome, goalsAway);
-        return "redirect:/admin";
+        return "redirect:/admin/partite";
     }
 
     @PostMapping("/partite/{id}/elimina")
     public String eliminaPartita(@PathVariable Long id) {
         partitaService.deletePartita(id);
-        return "redirect:/admin";
+        return "redirect:/admin/partite";
     }
 
     // ===== ARBITRI =====
+    @GetMapping("/arbitri")
+    public String listaArbitri(Model model) {
+        model.addAttribute("arbitri", arbitroService.getAllArbitri());
+        return "admin/arbitri/lista";
+    }
+
     @GetMapping("/arbitri/nuovo")
     public String nuovoArbitroForm(Model model) {
         model.addAttribute("arbitro", new Arbitro());
@@ -208,6 +239,31 @@ public class AdminController {
                                BindingResult result) {
         if (result.hasErrors()) return "admin/arbitri/form";
         arbitroService.saveArbitro(arbitro);
-        return "redirect:/admin";
+        return "redirect:/admin/arbitri";
+    }
+
+    @GetMapping("/arbitri/{id}/modifica")
+    public String modificaArbitroForm(@PathVariable Long id, Model model) {
+        model.addAttribute("arbitro", arbitroService.getArbitro(id));
+        return "admin/arbitri/form";
+    }
+
+    @PostMapping("/arbitri/{id}/modifica")
+    public String modificaArbitro(@PathVariable Long id,
+                                  @Valid @ModelAttribute("arbitro") Arbitro arbitro,
+                                  BindingResult result) {
+        if (result.hasErrors()) return "admin/arbitri/form";
+        arbitroService.updateArbitro(id, arbitro);
+        return "redirect:/admin/arbitri";
+    }
+
+    @PostMapping("/arbitri/{id}/elimina")
+    public String eliminaArbitro(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            arbitroService.deleteArbitro(id);
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/arbitri";
     }
 }

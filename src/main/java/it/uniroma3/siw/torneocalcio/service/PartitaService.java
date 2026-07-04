@@ -21,6 +21,16 @@ public class PartitaService {
     }
 
     @Transactional(readOnly = true)
+    public List<Partita> getAllPartite() {
+        return partitaRepository.findAllByOrderByDataOraDesc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Partita> getPartiteByTorneoDesc(Long torneoId) {
+        return partitaRepository.findByTorneoIdOrderByDataOraDesc(torneoId);
+    }
+
+    @Transactional(readOnly = true)
     public Partita getPartita(Long id) {
         return partitaRepository.findById(id).orElse(null);
     }

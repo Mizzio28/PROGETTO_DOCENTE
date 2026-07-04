@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(title='Admin Partite')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4">
+  <h1 class="mb-4">Gestione Partite</h1>
+  <form method="get" th:action="@{/admin/partite}" class="row g-2 mb-3">
+    <div class="col-auto">
+      <select name="torneoId" class="form-select" onchange="this.form.submit()">
+        <option value="">Tutti i tornei</option>
+        <option th:each="t : ${tornei}" th:value="${t.id}" th:text="${t.nome + ' (' + t.anno + ')'}"
+                th:selected="${torneoId != null and torneoId == t.id}"></option>
+      </select>
+    </div>
+  </form>
+  <a th:href="@{/admin/partite/nuova}" class="btn btn-primary mb-3">+ Registra partita</a>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle bg-white shadow-sm">
+      <thead><tr><th>Data/Ora</th><th>Torneo</th><th>Home</th><th>Away</th><th>Risultato</th><th>Stato</th><th>Arbitro</th><th>Azioni</th></tr></thead>
+      <tbody>
+        <tr th:each="p : ${partite}">
+          <td th:text="${#temporals.format(p.dataOra,'dd/MM/yyyy HH:mm')}"></td>
+          <td th:text="${p.torneo.nome}"></td>
+          <td th:text="${p.squadraHome.nome}"></td>
+          <td th:text="${p.squadraAway.nome}"></td>
+          <td th:text="${p.stato.name() == 'PLAYED' ? p.goalsHome + ' - ' + p.goalsAway : '-'}"></td>
+          <td><span class="badge" th:classappend="${p.stato.name() == 'PLAYED' ? 'text-bg-success' : (p.stato.name() == 'CANCELLED' ? 'text-bg-secondary' : 'text-bg-info')}" th:text="${p.stato}"></span></td>
+          <td th:text="${p.arbitro.cognome + ' ' + p.arbitro.nome}"></td>
+          <td>
+            <a th:href="@{/admin/partite/{id}/risultato(id=${p.id})}" class="btn btn-primary btn-sm">Risultato</a>
+            <form th:action="@{/admin/partite/{id}/elimina(id=${p.id})}" method="post" class="d-inline"
+                  onsubmit="return confirm('Eliminare questa partita?')">
+              <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(partite)}"><td colspan="8">Nessuna partita.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body></html>

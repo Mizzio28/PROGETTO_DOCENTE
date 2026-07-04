@@ -1,36 +1,50 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Admin Dashboard</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Admin Dashboard')}"></head>
 <body>
-<nav class="navbar">
-  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
-  <a th:href="@{/admin}">Dashboard</a>
-  <a th:href="@{/admin/tornei}">Tornei</a>
-  <a th:href="@{/admin/squadre}">Squadre</a>
-  <a th:href="@{/admin/partite/nuova}">+ Partita</a>
-  <a th:href="@{/admin/arbitri/nuovo}">+ Arbitro</a>
-  <div class="nav-right">
-    <form th:action="@{/logout}" method="post" style="display:inline">
-      <button type="submit" class="btn btn-secondary">Logout</button>
-    </form>
-  </div>
-</nav>
-<div class="container">
-  <h1>Dashboard Amministratore</h1>
-  <div class="grid">
-    <div class="card"><h3>Tornei</h3>
-      <p th:text="${#lists.size(tornei)} + ' tornei registrati'"></p>
-      <a th:href="@{/admin/tornei/nuovo}" class="btn btn-primary">+ Nuovo torneo</a>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4">
+  <h1 class="mb-4">Dashboard Amministratore</h1>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="h5">Tornei</h3>
+          <p th:text="${#lists.size(tornei)} + ' tornei registrati'"></p>
+          <a th:href="@{/admin/tornei}" class="btn btn-secondary btn-sm">Vedi tutti</a>
+          <a th:href="@{/admin/tornei/nuovo}" class="btn btn-primary btn-sm">+ Nuovo</a>
+        </div>
+      </div>
     </div>
-    <div class="card"><h3>Squadre</h3>
-      <p th:text="${#lists.size(squadre)} + ' squadre registrate'"></p>
-      <a th:href="@{/admin/squadre/nuova}" class="btn btn-primary">+ Nuova squadra</a>
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="h5">Squadre</h3>
+          <p th:text="${#lists.size(squadre)} + ' squadre registrate'"></p>
+          <a th:href="@{/admin/squadre}" class="btn btn-secondary btn-sm">Vedi tutte</a>
+          <a th:href="@{/admin/squadre/nuova}" class="btn btn-primary btn-sm">+ Nuova</a>
+        </div>
+      </div>
     </div>
-    <div class="card"><h3>Partite</h3>
-      <a th:href="@{/admin/partite/nuova}" class="btn btn-primary">+ Registra partita</a>
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="h5">Partite</h3>
+          <p th:text="${#lists.size(partite)} + ' partite registrate'"></p>
+          <a th:href="@{/admin/partite}" class="btn btn-secondary btn-sm">Vedi tutte</a>
+          <a th:href="@{/admin/partite/nuova}" class="btn btn-primary btn-sm">+ Registra</a>
+        </div>
+      </div>
     </div>
-    <div class="card"><h3>Arbitri</h3>
-      <a th:href="@{/admin/arbitri/nuovo}" class="btn btn-primary">+ Nuovo arbitro</a>
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="h5">Arbitri</h3>
+          <p th:text="${#lists.size(arbitri)} + ' arbitri registrati'"></p>
+          <a th:href="@{/admin/arbitri}" class="btn btn-secondary btn-sm">Vedi tutti</a>
+          <a th:href="@{/admin/arbitri/nuovo}" class="btn btn-primary btn-sm">+ Nuovo</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>

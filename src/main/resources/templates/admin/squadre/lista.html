@@ -1,27 +1,38 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Admin Squadre</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Admin Squadre')}"></head>
 <body>
-<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a><a th:href="@{/admin}">Dashboard</a><a th:href="@{/admin/squadre}">Squadre</a></nav>
-<div class="container">
-  <h1>Gestione Squadre</h1>
-  <a th:href="@{/admin/squadre/nuova}" class="btn btn-primary" style="margin-bottom:16px">+ Nuova squadra</a>
-  <table>
-    <thead><tr><th>Nome</th><th>Città</th><th>Fondazione</th><th>Azioni</th></tr></thead>
-    <tbody>
-      <tr th:each="s : ${squadre}">
-        <td th:text="${s.nome}"></td><td th:text="${s.citta}"></td><td th:text="${s.annoFondazione}"></td>
-        <td>
-          <a th:href="@{/admin/squadre/{id}/modifica(id=${s.id})}" class="btn btn-primary">Modifica</a>
-          <a th:href="@{/admin/squadre/{id}/aggiungi-a-torneo(id=${s.id})}" class="btn btn-secondary">+ Torneo</a>
-          <a th:href="@{/admin/squadre/{id}/giocatori/nuovo(id=${s.id})}" class="btn btn-secondary">+ Giocatore</a>
-          <form th:action="@{/admin/squadre/{id}/elimina(id=${s.id})}" method="post" style="display:inline"
-                onsubmit="return confirm('Eliminare questa squadra?')">
-            <button type="submit" class="btn btn-danger">Elimina</button>
-          </form>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4">
+  <h1 class="mb-4">Gestione Squadre</h1>
+  <a th:href="@{/admin/squadre/nuova}" class="btn btn-primary mb-3">+ Nuova squadra</a>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle bg-white shadow-sm">
+      <thead><tr><th>Nome</th><th>Città</th><th>Fondazione</th><th>Giocatori</th><th>Azioni</th></tr></thead>
+      <tbody>
+        <tr th:each="s : ${squadre}">
+          <td th:text="${s.nome}"></td>
+          <td th:text="${s.citta}"></td>
+          <td th:text="${s.annoFondazione}"></td>
+          <td>
+            <div th:each="g : ${s.giocatori}">
+              <a th:href="@{/admin/giocatori/{id}/modifica(id=${g.id})}" th:text="${g.cognome + ' ' + g.nome}" class="small"></a>
+            </div>
+            <span th:if="${#lists.isEmpty(s.giocatori)}" class="text-muted small">Nessun giocatore</span>
+          </td>
+          <td>
+            <a th:href="@{/admin/squadre/{id}/modifica(id=${s.id})}" class="btn btn-primary btn-sm">Modifica</a>
+            <a th:href="@{/admin/squadre/{id}/aggiungi-a-torneo(id=${s.id})}" class="btn btn-secondary btn-sm">+ Torneo</a>
+            <a th:href="@{/admin/squadre/{id}/giocatori/nuovo(id=${s.id})}" class="btn btn-secondary btn-sm">+ Giocatore</a>
+            <form th:action="@{/admin/squadre/{id}/elimina(id=${s.id})}" method="post" class="d-inline"
+                  onsubmit="return confirm('Eliminare questa squadra?')">
+              <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(squadre)}"><td colspan="5">Nessuna squadra registrata.</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 </body></html>

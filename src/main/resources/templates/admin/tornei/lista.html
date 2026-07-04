@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Admin Tornei</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Admin Tornei')}"></head>
 <body>
-<nav class="navbar">
-  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
-  <a th:href="@{/admin}">Dashboard</a>
-  <a th:href="@{/admin/tornei}">Tornei</a>
-  <div class="nav-right"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-secondary">Logout</button></form></div>
-</nav>
-<div class="container">
-  <h1>Gestione Tornei</h1>
-  <a th:href="@{/admin/tornei/nuovo}" class="btn btn-primary" style="margin-bottom:16px">+ Nuovo torneo</a>
-  <table>
-    <thead><tr><th>Nome</th><th>Anno</th><th>Descrizione</th><th>Azioni</th></tr></thead>
-    <tbody>
-      <tr th:each="t : ${tornei}">
-        <td th:text="${t.nome}"></td>
-        <td th:text="${t.anno}"></td>
-        <td th:text="${t.descrizione}"></td>
-        <td>
-          <a th:href="@{/admin/tornei/{id}/modifica(id=${t.id})}" class="btn btn-primary">Modifica</a>
-          <a th:href="@{/tornei/{id}(id=${t.id})}" class="btn btn-secondary">Visualizza</a>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4">
+  <h1 class="mb-4">Gestione Tornei</h1>
+  <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+  <a th:href="@{/admin/tornei/nuovo}" class="btn btn-primary mb-3">+ Nuovo torneo</a>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle bg-white shadow-sm">
+      <thead><tr><th>Nome</th><th>Anno</th><th>Descrizione</th><th>Azioni</th></tr></thead>
+      <tbody>
+        <tr th:each="t : ${tornei}">
+          <td th:text="${t.nome}"></td>
+          <td th:text="${t.anno}"></td>
+          <td th:text="${t.descrizione}"></td>
+          <td>
+            <a th:href="@{/admin/tornei/{id}/modifica(id=${t.id})}" class="btn btn-primary btn-sm">Modifica</a>
+            <a th:href="@{/tornei/{id}(id=${t.id})}" class="btn btn-secondary btn-sm">Visualizza</a>
+            <form th:action="@{/admin/tornei/{id}/elimina(id=${t.id})}" method="post" class="d-inline"
+                  onsubmit="return confirm('Eliminare questo torneo?')">
+              <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(tornei)}"><td colspan="4">Nessun torneo registrato.</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 </body></html>

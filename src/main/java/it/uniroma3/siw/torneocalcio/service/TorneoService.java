@@ -1,10 +1,12 @@
 package it.uniroma3.siw.torneocalcio.service;
 
+import it.uniroma3.siw.torneocalcio.model.Squadra;
 import it.uniroma3.siw.torneocalcio.model.Torneo;
 import it.uniroma3.siw.torneocalcio.repository.TorneoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,7 +28,7 @@ public class TorneoService {
     /** Carica torneo con squadre+partite via EntityGraph (analisi fetch) */
     @Transactional(readOnly = true)
     public Torneo getTorneoConDettagli(Long id) {
-        return torneoRepository.findWithSquadreAndPartiteById(id).orElse(null);
+        return torneoRepository.findWithSquadreById(id).orElse(null);
     }
 
     /** Carica torneo con squadre+giocatori via JOIN FETCH JPQL (analisi fetch) */
@@ -51,6 +53,14 @@ public class TorneoService {
 
     @Transactional
     public void deleteTorneo(Long id) {
-        torneoRepository.deleteById(id);
+        Torneo torneo = torneoRepository.findWithSquadreById(id).orElseThrow();
+        if (!torneo.getPartite().isEmpty()) {
+            throw new IllegalStateException(
+                "Impossibile eliminare: il torneo ha " + torneo.getPartite().size() + " partite collegate");
+        }
+        for (Squadra squadra : new ArrayList<>(torneo.getSquadre())) {
+            squadra.getTornei().remove(torneo);
+        }
+        torneoRepository.delete(torneo);
     }
 }

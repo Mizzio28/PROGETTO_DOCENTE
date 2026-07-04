@@ -1,39 +1,41 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Registra Partita</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Registra Partita')}"></head>
 <body>
-<nav class="navbar"><a class="brand" th:href="@{/}">⚽ TorneoCalcio</a><a th:href="@{/admin}">Dashboard</a></nav>
-<div class="container" style="max-width:620px">
-  <div class="card" style="margin-top:32px">
-    <h2>Registra Partita</h2>
-    <form th:action="@{/admin/partite/nuova}" th:object="${partita}" method="post">
-      <div class="form-group"><label>Torneo</label>
-        <select name="torneoId" required>
-          <option th:each="t : ${tornei}" th:value="${t.id}" th:text="${t.nome + ' (' + t.anno + ')'}"></option>
-        </select>
-      </div>
-      <div class="form-group"><label>Squadra Home</label>
-        <select name="squadraHomeId" required>
-          <option th:each="s : ${squadre}" th:value="${s.id}" th:text="${s.nome}"></option>
-        </select>
-      </div>
-      <div class="form-group"><label>Squadra Away</label>
-        <select name="squadraAwayId" required>
-          <option th:each="s : ${squadre}" th:value="${s.id}" th:text="${s.nome}"></option>
-        </select>
-      </div>
-      <div class="form-group"><label>Arbitro</label>
-        <select name="arbitroId" required>
-          <option th:each="a : ${arbitri}" th:value="${a.id}" th:text="${a.cognome + ' ' + a.nome + ' (' + a.codiceArbitrale + ')'}"></option>
-        </select>
-      </div>
-      <div class="form-group"><label>Data e Ora</label>
-        <input type="datetime-local" th:field="*{dataOra}" required/></div>
-      <div class="form-group"><label>Luogo</label>
-        <input type="text" th:field="*{luogo}" required/></div>
-      <button type="submit" class="btn btn-primary">Registra partita</button>
-      <a th:href="@{/admin}" class="btn btn-secondary">Annulla</a>
-    </form>
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+<div class="container py-4" style="max-width:620px">
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h2 class="h4">Registra Partita</h2>
+      <form th:action="@{/admin/partite/nuova}" th:object="${partita}" method="post">
+        <div class="mb-3"><label class="form-label">Torneo</label>
+          <select name="torneoId" class="form-select" required>
+            <option th:each="t : ${tornei}" th:value="${t.id}" th:text="${t.nome + ' (' + t.anno + ')'}"></option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Squadra Home</label>
+          <select name="squadraHomeId" class="form-select" required>
+            <option th:each="s : ${squadre}" th:value="${s.id}" th:text="${s.nome}"></option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Squadra Away</label>
+          <select name="squadraAwayId" class="form-select" required>
+            <option th:each="s : ${squadre}" th:value="${s.id}" th:text="${s.nome}"></option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Arbitro</label>
+          <select name="arbitroId" class="form-select" required>
+            <option th:each="a : ${arbitri}" th:value="${a.id}" th:text="${a.cognome + ' ' + a.nome + ' (' + a.codiceArbitrale + ')'}"></option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Data e Ora</label>
+          <input type="datetime-local" class="form-control" th:field="*{dataOra}" required/></div>
+        <div class="mb-3"><label class="form-label">Luogo</label>
+          <input type="text" class="form-control" th:field="*{luogo}" required/></div>
+        <button type="submit" class="btn btn-primary">Registra partita</button>
+        <a th:href="@{/admin/partite}" class="btn btn-secondary">Annulla</a>
+      </form>
+    </div>
   </div>
 </div>
 </body></html>

@@ -1,35 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
-<head><meta charset="UTF-8"><title>Tornei</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head th:replace="~{fragments/layout :: head(title='Tornei')}"></head>
 <body>
-<nav class="navbar">
-  <a class="brand" th:href="@{/}">⚽ TorneoCalcio</a>
-  <a th:href="@{/tornei}">Tornei</a>
-  <div class="nav-right">
-    <span sec:authorize="isAuthenticated()">
-      <span sec:authentication="name"></span> |
-      <form th:action="@{/logout}" method="post" style="display:inline">
-        <button type="submit" class="btn btn-secondary">Logout</button>
-      </form>
-    </span>
-    <span sec:authorize="isAnonymous()">
-      <a th:href="@{/login}" class="btn btn-primary">Login</a>
-    </span>
-    <span sec:authorize="hasAuthority('ADMIN')">
-      <a th:href="@{/admin}" class="btn btn-danger">Admin</a>
-    </span>
-  </div>
-</nav>
-<div class="container">
-  <h1>Tornei di Calcio</h1>
-  <div class="grid">
-    <div class="card" th:each="t : ${tornei}">
-      <h3 th:text="${t.nome}"></h3>
-      <p><strong>Anno:</strong> <span th:text="${t.anno}"></span></p>
-      <p th:text="${t.descrizione}"></p>
-      <a th:href="@{/tornei/{id}(id=${t.id})}" class="btn btn-primary" style="margin-top:10px">Dettaglio</a>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container py-4">
+  <h1 class="mb-4">Tornei di Calcio</h1>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="col" th:each="t : ${tornei}">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title h5" th:text="${t.nome}"></h3>
+          <p class="card-text mb-1"><strong>Anno:</strong> <span th:text="${t.anno}"></span></p>
+          <p class="card-text text-muted" th:text="${t.descrizione}"></p>
+          <a th:href="@{/tornei/{id}(id=${t.id})}" class="btn btn-primary mt-2">Dettaglio</a>
+        </div>
+      </div>
     </div>
-    <p th:if="${#lists.isEmpty(tornei)}">Nessun torneo.</p>
+    <p class="col" th:if="${#lists.isEmpty(tornei)}">Nessun torneo.</p>
   </div>
 </div>
 </body></html>
