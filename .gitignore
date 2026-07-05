@@ -5,3 +5,9 @@ target/
 .vscode/
 HELP.md
 .claude/
+
+# frontend (React/Vite): buildato automaticamente da Maven (frontend-maven-plugin),
+# non serve versionare Node scaricato in locale, node_modules o il bundle generato
+frontend/node/
+frontend/node_modules/
+src/main/resources/static/react/commenti/

@@ -22,27 +22,10 @@
     <p><a th:href="@{/login}">Accedi</a> per vedere e aggiungere commenti.</p>
   </div>
   <div sec:authorize="isAuthenticated()">
-    <div class="card shadow-sm mb-3" th:each="c : ${partita.commenti}">
-      <div class="card-body">
-        <p class="mb-1"><strong th:text="${c.autore.name + ' ' + c.autore.surname}"></strong>
-           <small class="text-muted" th:text="${#temporals.format(c.dataCommento,'dd/MM/yyyy HH:mm')}"></small></p>
-        <p th:text="${c.testo}"></p>
-        <a th:if="${currentUserEmail != null and currentUserEmail == c.autore.email}"
-           th:href="@{/commenti/{id}/modifica(id=${c.id})}" class="btn btn-secondary btn-sm">Modifica</a>
-      </div>
+    <div id="commenti-root"
+         th:attr="data-partita-id=${partita.id}, data-user-email=${currentUserEmail}">
     </div>
-    <div th:if="${#lists.isEmpty(partita.commenti)}"><p>Nessun commento.</p></div>
-    <div class="card shadow-sm mt-3">
-      <div class="card-body">
-        <h3 class="h5">Aggiungi un commento</h3>
-        <form th:action="@{/partite/{id}/commenti(id=${partita.id})}" method="post">
-          <div class="mb-3">
-            <textarea name="testo" class="form-control" rows="3" placeholder="Scrivi il tuo commento..." required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">Invia</button>
-        </form>
-      </div>
-    </div>
+    <script src="/react/commenti/commenti.js"></script>
   </div>
 </div>
 </body></html>
