@@ -1,4 +1,4 @@
-package it.uniroma3.siw.torneocalcio.dto;
+package it.uniroma3.siw.torneocalcio.controller.dto;
 
 import it.uniroma3.siw.torneocalcio.model.Commento;
 

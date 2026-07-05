@@ -1,8 +1,7 @@
 package it.uniroma3.siw.torneocalcio.controller;
 
-import it.uniroma3.siw.torneocalcio.model.Credentials;
 import it.uniroma3.siw.torneocalcio.model.User;
-import it.uniroma3.siw.torneocalcio.service.CredentialsService;
+import it.uniroma3.siw.torneocalcio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -15,29 +14,25 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     @Autowired
-    private CredentialsService credentialsService;
+    private UserService userService;
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("user", new User());
-        model.addAttribute("credentials", new Credentials());
         return "auth/register";
     }
 
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("user") User user,
-                           BindingResult userResult,
-                           @Valid @ModelAttribute("credentials") Credentials credentials,
-                           BindingResult credResult,
+                           BindingResult result,
                            Model model) {
-        if (credentialsService.usernameExists(credentials.getUsername())) {
+        if (userService.usernameExists(user.getUsername())) {
             model.addAttribute("usernameError", "Username già in uso");
             return "auth/register";
         }
-        if (userResult.hasErrors() || credResult.hasErrors()) return "auth/register";
+        if (result.hasErrors()) return "auth/register";
 
-        credentials.setUser(user);
-        credentialsService.saveCredentials(credentials);
+        userService.registerUser(user);
         return "redirect:/login";
     }
 
@@ -49,9 +44,8 @@ public class AuthController {
     @GetMapping("/success")
     public String loginSuccess(Model model) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Credentials creds = credentialsService.getCredentials(username);
-        if (creds != null && creds.getUser() != null)
-            model.addAttribute("user", creds.getUser());
+        User user = userService.getUserByUsername(username);
+        if (user != null) model.addAttribute("user", user);
         model.addAttribute("username", username);
         return "auth/success";
     }

@@ -29,7 +29,6 @@ public class DataLoader implements CommandLineRunner {
     @Autowired private GiocatoreService giocatoreService;
     @Autowired private ArbitroService arbitroService;
     @Autowired private PartitaService partitaService;
-    @Autowired private CredentialsService credentialsService;
     @Autowired private UserService userService;
     @Autowired private CommentoService commentoService;
 
@@ -54,7 +53,7 @@ public class DataLoader implements CommandLineRunner {
             return;
         }
 
-        credentialsService.saveAdminCredentials("admin", "admin123");
+        creaAdmin();
 
         Torneo coppaEstate = creaTorneo("Coppa Estate 2026", 2026,
             "Torneo estivo a eliminazione diretta tra le migliori squadre amatoriali della città.");
@@ -83,6 +82,16 @@ public class DataLoader implements CommandLineRunner {
 
         List<String> usernames = creaUtenti();
         creaCommenti(partitePlayed, usernames);
+    }
+
+    private void creaAdmin() {
+        User admin = new User();
+        admin.setName("Admin");
+        admin.setSurname("Admin");
+        admin.setEmail("admin@torneocalcio.local");
+        admin.setUsername("admin");
+        admin.setPassword("admin123");
+        userService.registerAdmin(admin);
     }
 
     private Torneo creaTorneo(String nome, int anno, String descrizione) {
@@ -188,14 +197,9 @@ public class DataLoader implements CommandLineRunner {
         user.setName(nome);
         user.setSurname(cognome);
         user.setEmail(email);
-        user = userService.saveUser(user);
-
-        Credentials credentials = new Credentials();
-        credentials.setUsername(username);
-        credentials.setPassword("password123");
-        credentials.setUser(user);
-        credentialsService.saveCredentials(credentials);
-
+        user.setUsername(username);
+        user.setPassword("password123");
+        userService.registerUser(user);
         return username;
     }
 

@@ -29,7 +29,7 @@ public class SquadraService {
 
     @Transactional(readOnly = true)
     public Squadra getSquadraConGiocatori(Long id) {
-        return squadraRepository.findWithGiocatoriById(id).orElse(null);
+        return squadraRepository.findWithGiocatoriById(id).orElseThrow();
     }
 
     @Transactional

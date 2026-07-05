@@ -13,7 +13,7 @@ public class CommentoService {
 
     @Autowired private CommentoRepository commentoRepository;
     @Autowired private PartitaRepository partitaRepository;
-    @Autowired private CredentialsRepository credentialsRepository;
+    @Autowired private UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<Commento> getCommentiByPartita(Long partitaId) {
@@ -25,8 +25,8 @@ public class CommentoService {
         Commento commento = new Commento();
         commento.setTesto(testo);
         commento.setPartita(partitaRepository.findById(partitaId).orElseThrow());
-        Credentials creds = credentialsRepository.findByUsername(username).orElseThrow();
-        commento.setAutore(creds.getUser());
+        User autore = userRepository.findByUsername(username).orElseThrow();
+        commento.setAutore(autore);
         return commentoRepository.save(commento);
     }
 
@@ -47,11 +47,7 @@ public class CommentoService {
     /** Restituisce il commento solo se appartiene all'utente indicato (controllo di proprietà). */
     @Transactional(readOnly = true)
     public Optional<Commento> getCommentoDiUtente(Long commentoId, String username) {
-        Credentials creds = credentialsRepository.findByUsername(username).orElseThrow();
-        if (creds.getUser() == null) {
-            // account senza profilo utente (es. admin): non può possedere commenti
-            return Optional.empty();
-        }
-        return commentoRepository.findByIdAndAutoreId(commentoId, creds.getUser().getId());
+        User utente = userRepository.findByUsername(username).orElseThrow();
+        return commentoRepository.findByIdAndAutoreId(commentoId, utente.getId());
     }
 }

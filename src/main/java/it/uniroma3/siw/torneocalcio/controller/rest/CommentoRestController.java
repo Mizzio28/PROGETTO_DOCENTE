@@ -1,7 +1,7 @@
 package it.uniroma3.siw.torneocalcio.controller.rest;
 
-import it.uniroma3.siw.torneocalcio.dto.CommentoDTO;
-import it.uniroma3.siw.torneocalcio.dto.CommentoRequest;
+import it.uniroma3.siw.torneocalcio.controller.dto.CommentoDTO;
+import it.uniroma3.siw.torneocalcio.controller.dto.CommentoRequest;
 import it.uniroma3.siw.torneocalcio.model.Commento;
 import it.uniroma3.siw.torneocalcio.service.CommentoService;
 import jakarta.validation.Valid;

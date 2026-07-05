@@ -37,7 +37,7 @@ public class PartitaService {
 
     @Transactional(readOnly = true)
     public Partita getPartitaConCommenti(Long id) {
-        return partitaRepository.findWithCommentiById(id).orElse(null);
+        return partitaRepository.findWithCommentiById(id).orElseThrow();
     }
 
     @Transactional

@@ -1,11 +1,11 @@
-package it.uniroma3.siw.torneocalcio.dto;
+package it.uniroma3.siw.torneocalcio.viewmodel;
 
 import it.uniroma3.siw.torneocalcio.model.Squadra;
 
 /**
  * Riga della classifica di un torneo: statistiche di una squadra calcolate
- * a partire dalle partite giocate (non è un'entità JPA, solo un supporto
- * per la vista).
+ * a partire dalle partite giocate. Non è un DTO (non viene mai serializzato
+ * in JSON), ma un oggetto di supporto alla vista Thymeleaf.
  */
 public class RigaClassifica {
 

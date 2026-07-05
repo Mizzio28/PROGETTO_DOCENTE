@@ -1,6 +1,6 @@
 package it.uniroma3.siw.torneocalcio.service;
 
-import it.uniroma3.siw.torneocalcio.dto.RigaClassifica;
+import it.uniroma3.siw.torneocalcio.viewmodel.RigaClassifica;
 import it.uniroma3.siw.torneocalcio.model.Partita;
 import it.uniroma3.siw.torneocalcio.model.Squadra;
 import it.uniroma3.siw.torneocalcio.model.StatoPartita;
@@ -42,7 +42,7 @@ public class TorneoService {
     /** Carica torneo con squadre+partite via EntityGraph (analisi fetch) */
     @Transactional(readOnly = true)
     public Torneo getTorneoConDettagli(Long id) {
-        return torneoRepository.findWithSquadreById(id).orElse(null);
+        return torneoRepository.findWithSquadreById(id).orElseThrow();
     }
 
     /** Carica torneo con squadre+giocatori via JOIN FETCH JPQL (analisi fetch) */
