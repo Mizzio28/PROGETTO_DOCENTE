@@ -46,3 +46,24 @@ h1, h2, h3 {
   background: #fffde7;
   font-weight: bold;
 }
+
+.fetch-chart {
+  margin-bottom: 14px;
+}
+.fetch-chart-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.fetch-bar-track {
+  background-color: #e1e0d9;
+  border-radius: 4px;
+  height: 10px;
+  overflow: hidden;
+}
+.fetch-bar-fill {
+  background-color: var(--brand-green);
+  height: 100%;
+  border-radius: 4px;
+}

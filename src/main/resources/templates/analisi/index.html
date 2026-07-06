@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(title='Analisi')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="container py-5">
+  <h1 class="mb-4">Analisi: strategie di accesso ai dati</h1>
+
+  <section class="mb-5">
+    <h2>Obiettivo</h2>
+    <p>
+      Questa pagina raccoglie i risultati di un esperimento didattico: confrontare diverse
+      strategie con cui Spring Data JPA e Hibernate possono caricare un grafo di dati collegato
+      — in questo caso un Torneo, le sue Squadre e i Giocatori di ciascuna squadra — misurandone
+      l'impatto in termini di numero di query eseguite e tempo di esecuzione. L'obiettivo non è
+      trovare "la" strategia migliore in assoluto, ma mostrare come scelte di fetching diverse
+      producano comportamenti molto diversi a parità di dato restituito, e motivare le scelte
+      fatte in questo progetto.
+    </p>
+  </section>
+
+  <section class="mb-5">
+    <h2>Metodologia</h2>
+    <p>
+      L'esperimento carica lo stesso caso d'uso — Torneo → Squadre → Giocatori — con tre
+      strategie di fetch diverse, sugli stessi 2 tornei presenti nel database, ripetendo
+      ciascuna strategia 30 volte per attenuare il rumore di misura. Prima di ogni misura viene
+      eseguito un giro di "warm-up" (per scaldare pool di connessioni e JIT) che non contribuisce
+      al risultato. Il numero di query SQL eseguite viene contato tramite le statistiche interne
+      di Hibernate (<code>org.hibernate.stat.Statistics</code>), il tempo con
+      <code>System.nanoTime()</code>.
+    </p>
+    <ul>
+      <li><strong>Strategia A — LAZY (default):</strong> nessun fetch esplicito, ogni collezione viene caricata al primo accesso.</li>
+      <li><strong>Strategia B — EntityGraph su squadre:</strong> le squadre vengono caricate insieme al torneo in un'unica query, i giocatori restano lazy.</li>
+      <li><strong>Strategia C — EntityGraph + batch:</strong> le squadre vengono caricate insieme al torneo, poi un'unica query aggiuntiva carica tutti i giocatori di tutte le squadre insieme (<code>WHERE squadra_id IN (...)</code>).</li>
+    </ul>
+    <p class="text-muted small">
+      Esperimento eseguibile con <code>mvn spring-boot:run -Dspring-boot.run.profiles=benchmark</code>.
+      Codice sorgente: <code>benchmark/FetchStrategyBenchmark.java</code> (orchestrazione e misura)
+      e <code>benchmark/FetchStrategyService.java</code> (le tre strategie).
+    </p>
+  </section>
+
+  <section class="mb-5">
+    <h2>Risultati</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Strategia</th>
+            <th>Descrizione</th>
+            <th>Tempo / run</th>
+            <th>Query / run</th>
+            <th>Query totali</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${risultati}">
+            <td th:text="${r.nome()}"></td>
+            <td th:text="${r.descrizione()}"></td>
+            <td th:text="${r.tempoPerRun()}"></td>
+            <td th:text="${r.queryPerRun()}"></td>
+            <td th:text="${r.queryTotali()}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h3 class="h6 text-muted">Tempo per esecuzione</h3>
+        <div class="fetch-chart" th:each="r : ${risultati}">
+          <div class="fetch-chart-label">
+            <span th:text="${r.nome()}"></span>
+            <span th:text="${r.tempoPerRun()}"></span>
+          </div>
+          <div class="fetch-bar-track">
+            <div class="fetch-bar-fill" th:style="'width: ' + ${r.tempoBarPercent()} + '%'"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <h3 class="h6 text-muted">Query per esecuzione</h3>
+        <div class="fetch-chart" th:each="r : ${risultati}">
+          <div class="fetch-chart-label">
+            <span th:text="${r.nome()}"></span>
+            <span th:text="${r.queryPerRun()}"></span>
+          </div>
+          <div class="fetch-bar-track">
+            <div class="fetch-bar-fill" th:style="'width: ' + ${r.queryBarPercent()} + '%'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <h2>Dimostrazione negativa: MultipleBagFetchException</h2>
+    <p>
+      Un tentativo naturale per evitare l'N+1 sarebbe fare fetch join di più collezioni nella
+      stessa query JPQL. Hibernate però non lo permette quando due delle collezioni coinvolte
+      sono di tipo <code>List</code> (una "bag" in terminologia Hibernate): il motore non sa
+      come costruire il prodotto cartesiano dei risultati e lancia
+      <code>MultipleBagFetchException</code>. Ecco la stessa eccezione riprodotta dal vivo su
+      due scenari diversi:
+    </p>
+    <div class="alert alert-secondary" th:each="d : ${dimostrazioni}">
+      <strong th:text="${d.scenario()}"></strong>
+      <div><code th:text="${d.messaggio()}"></code></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Discussione e scelte implementative</h2>
+    <p>
+      La strategia A (LAZY) è quella che genera il classico problema N+1: una query per il
+      torneo, una per le squadre, e poi una query aggiuntiva per i giocatori di OGNI squadra.
+      È il costo più alto misurato, sia in numero di query che in tempo.
+    </p>
+    <p>
+      La strategia B (EntityGraph su squadre) riduce il problema: il torneo e le sue squadre
+      arrivano in un'unica query, ma i giocatori restano lazy e vengono comunque caricati una
+      squadra alla volta. Il numero di query scende, ma l'N+1 sui giocatori non è eliminato.
+    </p>
+    <p>
+      La strategia C (EntityGraph + batch) è quella più efficiente: dopo aver caricato
+      torneo+squadre in una query, un'unica query batch (<code>findBySquadraIdIn</code>)
+      recupera tutti i giocatori di tutte le squadre insieme. Il numero di query resta
+      costante — sempre 2 — indipendentemente da quante squadre partecipano al torneo, il che
+      la rende anche la più scalabile.
+    </p>
+    <p>
+      Ad oggi il progetto usa in produzione la strategia B
+      (<code>TorneoService.getTorneoConDettagli</code>, tramite
+      <code>TorneoRepository.findWithSquadreById</code> con
+      <code>@EntityGraph(attributePaths = {"squadre"})</code>) per la pagina di dettaglio
+      torneo. La strategia C, pur risultando la più efficiente in questo esperimento, non è al
+      momento cablata in un endpoint di produzione: è dimostrata qui come pattern di riferimento
+      per evitare N+1 su collezioni annidate, utile ad esempio se in futuro si volesse mostrare
+      l'elenco completo dei giocatori di tutte le squadre di un torneo in un'unica vista.
+    </p>
+  </section>
+</div>
+
+</body>
+</html>

@@ -27,6 +27,7 @@ public class SecurityConfiguration {
                 "/", "/index", "/register", "/login",
                 "/tornei", "/tornei/**",
                 "/squadre", "/squadre/**",
+                "/analisi",
                 "/css/**", "/images/**", "/react/**", "/favicon.ico"
             ).permitAll();
             authorize.requestMatchers(HttpMethod.POST, "/register", "/login").permitAll();
