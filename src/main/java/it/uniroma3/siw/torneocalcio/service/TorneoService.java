@@ -39,16 +39,10 @@ public class TorneoService {
         return torneoRepository.findById(id).orElse(null);
     }
 
-    /** Carica torneo con squadre+partite via EntityGraph (analisi fetch) */
+    /** Carica torneo con squadre via EntityGraph. */
     @Transactional(readOnly = true)
     public Torneo getTorneoConDettagli(Long id) {
         return torneoRepository.findWithSquadreById(id).orElseThrow();
-    }
-
-    /** Carica torneo con squadre+giocatori via JOIN FETCH JPQL (analisi fetch) */
-    @Transactional(readOnly = true)
-    public Torneo getTorneoConGiocatori(Long id) {
-        return torneoRepository.findTorneoWithSquadreAndGiocatori(id).orElse(null);
     }
 
     @Transactional
